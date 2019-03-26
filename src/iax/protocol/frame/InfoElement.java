@@ -213,6 +213,10 @@ public class InfoElement {
      */
     public final static int MD5_V = 2;
     /**
+     * MD5 authentication.
+     */
+    public final static int MD5_V2 = 3;
+    /**
      * RSA authentication.
      */
     public final static int RSA_V = 4;

@@ -75,11 +75,12 @@ public class CallCommandSendFacade {
      * @param call call for sending the frame
      */
     public static void ringing(Call call) {
+        call.setWaitAnswer(true);
         (new Ringing(call)).execute();
     }
 
     /**
-     * Sends a voice frame delegating in the SendVoice command send 
+     * Sends a voice frame delegating in the SendVoiceData command send
      * @param call call for sending the frame
      * @param audioBuffer audio data to send in GSM format
      */

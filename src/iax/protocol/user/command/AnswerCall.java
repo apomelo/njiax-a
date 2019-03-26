@@ -30,10 +30,10 @@ public class AnswerCall implements UserCommand {
     public void run() {
         try {
             Call call = peer.getCall(callingNumber);
-            
-            ControlFrame answerFrame = 
-                new ControlFrame(call.getSrcCallNo(), false, call.getDestCallNo(), call.getTimestamp(), call.getOseqno(),
-                        call.getIseqno(), false, ControlFrame.ANSWER, new byte[0]);
+
+            ControlFrame answerFrame =
+                    new ControlFrame(call.getSrcCallNo(), false, call.getDestCallNo(), call.getTimestamp(), call.getOseqno(),
+                            call.getIseqno(), false, ControlFrame.ANSWER, new byte[0]);
 
             call.startRecorder();
             call.handleSendFrame(answerFrame);

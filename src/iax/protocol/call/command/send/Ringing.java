@@ -25,14 +25,6 @@ public class Ringing implements CallCommandSend {
     }
 
     public void run() {
-        call.handleSendFrame(new ProtocolControlFrame(call.getSrcCallNo(), 
-                false, 
-                call.getDestCallNo(), 
-                call.getTimestamp(), 
-                call.getOseqno(), 
-                call.getIseqno(), 
-                false, 
-                ProtocolControlFrame.ACCEPT_SC));
         call.handleSendFrame(new ControlFrame(call.getSrcCallNo(), 
                 false, 
                 call.getDestCallNo(), 

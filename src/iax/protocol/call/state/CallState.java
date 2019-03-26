@@ -2,6 +2,7 @@ package iax.protocol.call.state;
 
 import iax.protocol.call.Call;
 import iax.protocol.call.command.recv.CallCommandRecvFacade;
+import iax.protocol.frame.DTMFFrame;
 import iax.protocol.frame.Frame;
 import iax.protocol.frame.ProtocolControlFrame;
 
@@ -50,6 +51,10 @@ public abstract class CallState {
                 default:           
                     break;
                 }
+            } else if (frame.getType() == Frame.DTMFFRAME_T) {
+                DTMFFrame dtmfFrame = (DTMFFrame) frame;
+                char dtmfKey = (char) dtmfFrame.getSubclass();
+                handleDTFMFrame(dtmfKey);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -102,6 +107,62 @@ public abstract class CallState {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void handleDTFMFrame(char dtmfKey) {
+        switch (dtmfKey) {
+            case '0':
+                System.out.println(dtmfKey);
+                break;
+            case '1':
+                System.out.println(dtmfKey);
+                break;
+            case '2':
+                System.out.println(dtmfKey);
+                break;
+            case '3':
+                System.out.println(dtmfKey);
+                break;
+            case '4':
+                System.out.println(dtmfKey);
+                break;
+            case '5':
+                System.out.println(dtmfKey);
+                break;
+            case '6':
+                System.out.println(dtmfKey);
+                break;
+            case '7':
+                System.out.println(dtmfKey);
+                break;
+            case '8':
+                System.out.println(dtmfKey);
+                break;
+            case '9':
+                System.out.println(dtmfKey);
+                break;
+            case 'A':
+                System.out.println(dtmfKey);
+                break;
+            case 'B':
+                System.out.println(dtmfKey);
+                break;
+            case 'C':
+                System.out.println(dtmfKey);
+                break;
+            case 'D':
+                System.out.println(dtmfKey);
+                break;
+            case '*':
+                System.out.println(dtmfKey);
+                break;
+            case '#':
+                System.out.println(dtmfKey);
+                break;
+            default:
+                System.out.println("illegal dtmfKey! ");
+                break;
         }
     }
 }

@@ -1,7 +1,10 @@
 package iax.protocol.call.command.send;
 
 import iax.protocol.call.Call;
+import iax.protocol.frame.FrameException;
+import iax.protocol.frame.InfoElement;
 import iax.protocol.frame.ProtocolControlFrame;
+import iax.protocol.frame.VoiceFrame;
 
 /**
  * Sends an accept
@@ -24,14 +27,20 @@ public class Accept implements CallCommandSend {
     }
 
     public void run() {
-        call.handleSendFrame(new ProtocolControlFrame(call.getSrcCallNo(), 
-                false, 
-                call.getDestCallNo(), 
-                call.getTimestamp(), 
-                call.getOseqno(), 
-                call.getIseqno(), 
-                false, 
-                ProtocolControlFrame.ACCEPT_SC));
+        try {
+            ProtocolControlFrame acceptFrame = new ProtocolControlFrame(call.getSrcCallNo(),
+                    false,
+                    call.getDestCallNo(),
+                    call.getTimestamp(),
+                    call.getOseqno(),
+                    call.getIseqno(),
+                    false,
+                    ProtocolControlFrame.ACCEPT_SC);
+            acceptFrame.setFormat(VoiceFrame.G711_ALAW);
+            call.handleSendFrame(acceptFrame);
+        } catch (FrameException e) {
+            e.printStackTrace();
+        }
     }
 
 }

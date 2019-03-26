@@ -2,15 +2,8 @@ package iax.protocol.util;
 
 import java.util.HashMap;
 
+import iax.protocol.frame.*;
 import org.bouncycastle.crypto.digests.MD5Digest;
-
-import iax.protocol.frame.ControlFrame;
-import iax.protocol.frame.Frame;
-import iax.protocol.frame.FrameException;
-import iax.protocol.frame.FullFrame;
-import iax.protocol.frame.MiniFrame;
-import iax.protocol.frame.ProtocolControlFrame;
-import iax.protocol.frame.VoiceFrame;
 
 /**
  * Utiliy class to work with frames.
@@ -50,7 +43,7 @@ public class FrameUtil {
      * @return A new frame of suitable type filled with data.
      * @throws FrameException
      */
-    public static Frame deserialize(byte buffer[]) throws FrameException {
+    public static Frame  deserialize(byte buffer[]) throws FrameException {
         ByteBuffer byteBuffer = new ByteBuffer(buffer);
         try {
             boolean full = (((byteBuffer.get16bits(F_POS) & Frame.F_SHORTMASK)==0)?false:true);
@@ -58,7 +51,10 @@ public class FrameUtil {
                 return new MiniFrame(buffer);
             } else {
                 int frameType = byteBuffer.get8bits(FRAMETYPE_POS);
+//                System.out.println(frameType);
                 switch(frameType) {
+                    case FullFrame.DTMF_FT:
+                        return new DTMFFrame(buffer);
                     case FullFrame.CONTROL_FT:
                         return new ControlFrame(buffer);
                     case FullFrame.PROTOCOLCONTROL_FT:
@@ -66,7 +62,8 @@ public class FrameUtil {
                     case FullFrame.VOICE_FT:
                         return new VoiceFrame(buffer);
                     default:
-                }       throw new FrameException("Frame type unknown");
+                        throw new FrameException("Frame type unknown: " + frameType);
+                }
             }
         } catch (Exception e) {
             throw new FrameException(e);

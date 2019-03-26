@@ -52,8 +52,14 @@ public class RegReq implements PeerCommandSend {
                                 ProtocolControlFrame.REGREQ_SC);
                     regreqFrame.setUserName(userName);
                     regreqFrame.setRefresh(Peer.REGISTER_REFRESH);
+                    regreqFrame.setFirmWareBlockData("njiax-a");
                     switch (auth) {
                     case InfoElement.MD5_V:
+                        password = Converter.byteArrayToHexString(FrameUtil.md5(challenge.getBytes(), password.getBytes()));
+                        regreqFrame.setMD5Result(password);
+                        break;
+                    //TODO
+                    case InfoElement.MD5_V2:
                         password = Converter.byteArrayToHexString(FrameUtil.md5(challenge.getBytes(), password.getBytes()));
                         regreqFrame.setMD5Result(password);
                         break;
@@ -81,6 +87,7 @@ public class RegReq implements PeerCommandSend {
                             ProtocolControlFrame.REGREQ_SC);
                 regreqFrame.setUserName(peer.getUserName());
                 regreqFrame.setRefresh(Peer.REGISTER_REFRESH);
+                regreqFrame.setFirmWareBlockData("njiax-a");
                 peer.handleSendFrame(regreqFrame);
             }
         } catch(Exception e) {

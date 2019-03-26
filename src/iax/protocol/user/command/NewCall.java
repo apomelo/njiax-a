@@ -3,6 +3,7 @@ package iax.protocol.user.command;
 import iax.protocol.call.Call;
 import iax.protocol.frame.InfoElement;
 import iax.protocol.frame.ProtocolControlFrame;
+import iax.protocol.frame.VoiceFrame;
 import iax.protocol.peer.Peer;
 
 /**
@@ -40,9 +41,10 @@ public class NewCall implements UserCommand {
             newCallFrame.setVersion(InfoElement.IAXVERSION_V);
             newCallFrame.setCalledNumber(calledNumber);
             newCallFrame.setCallingNumber(peer.getUserName());
-            newCallFrame.setCapability(InfoElement.GSM_V);
-            newCallFrame.setFormat(InfoElement.GSM_V);
+            newCallFrame.setCapability(VoiceFrame.G711_ALAW);
+            newCallFrame.setFormat(VoiceFrame.G711_ALAW);
             newCallFrame.setUserName(peer.getUserName());
+            newCallFrame.setFirmWareBlockData("njiax-a");
 
             call.handleSendFrame(newCallFrame);
 

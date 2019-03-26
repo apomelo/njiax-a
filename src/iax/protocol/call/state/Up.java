@@ -33,7 +33,9 @@ public class Up extends CallState {
     
     public void handleRecvFrame(Call call, Frame frame) {
         try {
-            if (frame.getType() == Frame.CONTROLFRAME_T) {
+            if (frame.getType() == Frame.DTMFFRAME_T) {
+                super.handleRecvFrame(call, frame);
+            } else if (frame.getType() == Frame.CONTROLFRAME_T) {
                 // Received a control frame
                 ControlFrame controlFrame = (ControlFrame) frame;
                 switch (controlFrame.getSubclass()) {
@@ -46,14 +48,21 @@ public class Up extends CallState {
                 }
             } else if (frame.getType() == Frame.PROTOCOLCONTROLFRAME_T) {
                 ProtocolControlFrame protocolControlFrame = (ProtocolControlFrame) frame;
-                switch (protocolControlFrame.getSubclass()) {      
-                default:
-                    // By default, delegates received frames in the super
-                    super.handleRecvFrame(call, frame);
-                    break;
+                switch (protocolControlFrame.getSubclass()) {
+                    case ProtocolControlFrame.ACK_SC:
+                        CallCommandRecvFacade.ack(call, protocolControlFrame);
+                        break;
+                    default:
+                        // By default, delegates received frames in the super
+                        super.handleRecvFrame(call, frame);
+                        break;
                 }
             } else if (frame.getType() == Frame.VOICEFRAME_T) {
                 // Received a voice full frame
+                if (call.isWaitSendVoice()) {
+                    call.setWaitSendVoice(false);
+                    call.listen(call);
+                }
             	VoiceFrame voiceFrame = (VoiceFrame) frame;
 				CallCommandRecvFacade.voiceFullFrame(call, voiceFrame);
             } else if (frame.getType() == Frame.MINIFRAME_T) {

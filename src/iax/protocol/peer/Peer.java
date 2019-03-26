@@ -282,7 +282,7 @@ public class Peer {
                 else PeerCommandSendFacade.inval(this, frame);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getCause());
         }
     }
 

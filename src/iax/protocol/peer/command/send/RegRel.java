@@ -56,6 +56,11 @@ public class RegRel implements PeerCommandSend {
                         password = Converter.byteArrayToHexString(FrameUtil.md5(challenge.getBytes(), password.getBytes()));
                         regrelFrame.setMD5Result(password);
                         break;
+                    //TODO
+                    case InfoElement.MD5_V2:
+                        password = Converter.byteArrayToHexString(FrameUtil.md5(challenge.getBytes(), password.getBytes()));
+                        regrelFrame.setMD5Result(password);
+                        break;
                     case InfoElement.RSA_V:
                         //TODO: Calcular el RSA del password.
                         // pcf.setRSAResult()

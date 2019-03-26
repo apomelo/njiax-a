@@ -1,27 +1,21 @@
 package iax.protocol.call;
 
-import iax.audio.AudioListener;
-import iax.audio.Player;
-import iax.audio.PlayerException;
-import iax.audio.Recorder;
-import iax.audio.RecorderException;
+import iax.audio.*;
 import iax.audio.gsm.GSMPlayer;
 import iax.audio.gsm.GSMRecorder;
 import iax.protocol.call.command.send.CallCommandSendFacade;
 import iax.protocol.call.state.CallState;
 import iax.protocol.call.state.Initial;
-import iax.protocol.frame.Frame;
-import iax.protocol.frame.FullFrame;
-import iax.protocol.frame.MiniFrame;
-import iax.protocol.frame.ProtocolControlFrame;
+import iax.protocol.frame.*;
 import iax.protocol.peer.Peer;
 import iax.protocol.peer.PeerException;
+import iax.protocol.user.command.UserCommandFacade;
+import iax.protocol.util.FileUtils;
 
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Class that encapsulates the funcionality of a iax call and implements the interface AudioListener
@@ -48,6 +42,8 @@ public class Call implements AudioListener{
     private HashMap framesWaitingAck;
     // HashMap with the frames that are waiting for a specific reply
     private HashMap framesWaitingReply;
+    // HashMap with time of receiving the DTMF frames
+    private HashMap framesDTMFTime;
     // Audio player
     private Player player;
     // Audo Recorder
@@ -83,6 +79,25 @@ public class Call implements AudioListener{
     //Flag to determinate if the call is mute or not
     private boolean mute;
 
+    private boolean waitSendVoice;
+    private boolean waitAnswer;
+
+    public boolean isWaitSendVoice() {
+        return waitSendVoice;
+    }
+
+    public void setWaitSendVoice(boolean waitSendVoice) {
+        this.waitSendVoice = waitSendVoice;
+    }
+
+    public boolean isWaitAnswer() {
+        return waitAnswer;
+    }
+
+    public void setWaitAnswer(boolean waitAnswer) {
+        this.waitAnswer = waitAnswer;
+    }
+
     /**
      * Constructor. Initialize the player and the recorder
      * @param peer the peer that handles this call
@@ -96,6 +111,7 @@ public class Call implements AudioListener{
         this.mute = false;
         this.framesWaitingAck = new HashMap();
         this.framesWaitingReply = new HashMap();
+        this.framesDTMFTime = new HashMap();
         try {
             this.player = new GSMPlayer();
             this.recorder = new GSMRecorder();
@@ -261,7 +277,12 @@ public class Call implements AudioListener{
         peer.answeredCall(this);
         startRecorder();
     }
-    
+
+    public void answerCall() {
+        System.out.println("IAXphone, Answered call from " + calledNumber);
+        UserCommandFacade.answerCall(peer, calledNumber);
+    }
+
     /**
      * Notifies a received ringing for playing wait tones
      */
@@ -382,13 +403,25 @@ public class Call implements AudioListener{
      * @param fullFrame the full frame received
      */
     public void handleRecvFrame(FullFrame fullFrame) {
+        boolean isDiscard = false;
         if (fullFrame.getFrameType() != FullFrame.PROTOCOLCONTROLFRAME_T) {
-            incIseqno(fullFrame.getOseqno()+1);
+            if (fullFrame.getFrameType() == FullFrame.DTMF_FT) {
+                if (framesDTMFTime.get(fullFrame.getTimestamp()) == null) {
+                    incIseqno(fullFrame.getOseqno()+1);
+                    framesDTMFTime.put(fullFrame.getTimestamp(), System.currentTimeMillis());
+                } else {
+                    isDiscard = true;
+                }
+            } else {
+                incIseqno(fullFrame.getOseqno()+1);
+            }
         } else if (fullFrame.getSubclass() != ProtocolControlFrame.ACK_SC) {
             incIseqno(fullFrame.getOseqno()+1);
         }
-        incOseqno(fullFrame.getIseqno());
-        state.handleRecvFrame(this, fullFrame);
+        if (!isDiscard) {
+            incOseqno(fullFrame.getIseqno());
+            state.handleRecvFrame(this, fullFrame);
+        }
     }
 
     /**
@@ -477,14 +510,27 @@ public class Call implements AudioListener{
     // Method to retry frames that haven't been commited whith a specific frame or an ack frame
     private synchronized void retryFramesWaiting() {
         try {
+            Iterator<Map.Entry> it = framesDTMFTime.entrySet().iterator();
+            long nowTime = System.currentTimeMillis();
+            while (it.hasNext()) {
+                Map.Entry item = it.next();
+                long recvTime = (long) item.getValue();
+                if (nowTime - recvTime > 1000 * 10) {
+//                    System.out.println(framesDTMFTime);
+                    it.remove();
+//                    System.out.println(framesDTMFTime);
+                    System.out.println("remove the key from framesDTMFTime");
+                }
+            }
             Iterator iterator = framesWaitingAck.values().iterator();
             while (iterator.hasNext()) {
                 FullFrame retryFullFrame = (FullFrame)iterator.next();
                 retryFullFrame.incRetryCount();
                 if (retryFullFrame.getRetryCount() < RETRY_MAXCOUNT) {
                     peer.sendFrame(retryFullFrame);
-                } else throw new PeerException("Reached retries maximun in the call " + srcCallNo + 
-                        " for a full frame of type " + retryFullFrame.getFrameType() + ", subclass " + retryFullFrame.getSubclass());
+                }
+//                else throw new PeerException("Reached retries maximun in the call " + srcCallNo +
+//                        " for a full frame of type " + retryFullFrame.getFrameType() + ", subclass " + retryFullFrame.getSubclass());
             }
             iterator = framesWaitingReply.values().iterator();
             while (iterator.hasNext()) {
@@ -505,9 +551,13 @@ public class Call implements AudioListener{
 
 
     public void listen(byte[] buffer, int pos, int length) {
-        byte[] audioBuffer = new byte[length]; 
+        byte[] audioBuffer = new byte[length];
         System.arraycopy(buffer, pos, audioBuffer, 0, length);
         CallCommandSendFacade.sendVoice(this, audioBuffer);
+    }
+
+    public void listen(Call call) {
+        (new SendVoiceData(call, peer)).execute();
     }
 
 }

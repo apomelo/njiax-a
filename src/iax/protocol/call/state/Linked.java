@@ -8,6 +8,7 @@ import iax.protocol.frame.Frame;
 import iax.protocol.frame.MiniFrame;
 import iax.protocol.frame.ProtocolControlFrame;
 import iax.protocol.frame.VoiceFrame;
+import iax.protocol.user.command.UserCommandFacade;
 
 /**
  * Call's state linked. It's a singleton.
@@ -41,6 +42,7 @@ public class Linked extends CallState {
                     // Handles an answer frame received and sets the call's state to up
                     CallCommandRecvFacade.answer(call, controlFrame);
                     call.setState(Up.getInstance());
+                    call.listen(call);
                     break;
                 case ControlFrame.PROCEEDING:
                     // Handles a proceeding frame received
@@ -62,6 +64,13 @@ public class Linked extends CallState {
                 case ProtocolControlFrame.ACCEPT_SC:
                     // Received an accept frame
                 	CallCommandRecvFacade.accept(call, protocolControlFrame);
+                    break;
+                case ProtocolControlFrame.ACK_SC:
+                    CallCommandRecvFacade.ack(call, protocolControlFrame);
+                    if (call.isWaitAnswer()) {
+                        call.setWaitAnswer(false);
+                        call.answerCall();
+                    }
                     break;
                 default:
                     // By default, delegates received frames in the super
@@ -91,6 +100,7 @@ public class Linked extends CallState {
                 case ControlFrame.ANSWER:
                     call.sendFullFrameAndWaitForAck(controlFrame);
                     call.setState(Up.getInstance());
+                    call.setWaitSendVoice(true);
                     break;
                 case ControlFrame.BUSY:
                     call.sendFullFrameAndWaitForAck(controlFrame);

@@ -537,6 +537,10 @@ public class ProtocolControlFrame extends FullFrame {
             throw new FrameException(e);
         }
     }
+
+    public void setFirmWareBlockData(String fwBlockData) {
+        infoElements.put(InfoElement.FWBLOCKDATA, fwBlockData.getBytes());
+    }
    
     public byte[] serialize() {
         try {

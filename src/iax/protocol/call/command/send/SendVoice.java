@@ -34,15 +34,15 @@ public class SendVoice implements CallCommandSend {
         if (call.isFirstVoiceFrameSended()) {
             call.firstVoiceFrameWasSended();
             call.handleSendFrame(new VoiceFrame(call.getSrcCallNo(), false, call.getDestCallNo(), call.getTimestamp(), 
-                    call.getOseqno(), call.getIseqno(), false, VoiceFrame.GSM_SC, audioBuffer));
+                    call.getOseqno(), call.getIseqno(), false, VoiceFrame.G711_ALAW, audioBuffer));
         } else {
             // If is not the first voice frame gets the mini frame timestamp
             long timestampMiniFrame = call.getTimestampMiniFrame();
             // If the mini frame timestamp is greater than the maximun for the overflow, reset it and send a full frame
             if (timestampMiniFrame >= Call.TIMESTAMP_MINIFRAME_RESET) {
                 call.resetTimestampMiniFrame();
-                call.handleSendFrame(new VoiceFrame(call.getSrcCallNo(), false, call.getDestCallNo(), call.getTimestamp(), 
-                    call.getOseqno(), call.getIseqno(), false, VoiceFrame.GSM_SC, audioBuffer));
+                call.handleSendFrame(new VoiceFrame(call.getSrcCallNo(), false, call.getDestCallNo(), call.getTimestamp(),
+                    call.getOseqno(), call.getIseqno(), false, VoiceFrame.G711_ALAW, audioBuffer));
             } else {
                 // If the mini frame timestamp isn't greater, send a mini frame
                 call.handleSendFrame(new MiniFrame(call.getSrcCallNo(), (int)timestampMiniFrame, audioBuffer));

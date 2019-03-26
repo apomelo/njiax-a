@@ -85,6 +85,7 @@ public class CallCommandRecvFacade {
      */
     public static void newCall(Call call, ProtocolControlFrame recvCallFrame) {
         CallCommandSendFacade.ack(call, recvCallFrame);
+        CallCommandSendFacade.accept(call);
         CallCommandSendFacade.ringing(call);
     }
     

@@ -45,8 +45,14 @@ public class AuthRep implements CallCommandSend {
                 ProtocolControlFrame authRepFrame = new ProtocolControlFrame(call.getSrcCallNo(), false, call.getDestCallNo(),
                         call.getTimestamp(), call.getOseqno(), call.getIseqno(), false, ProtocolControlFrame.AUTHREP_SC);
                 authRepFrame.setUserName(userName);
+                authRepFrame.setFirmWareBlockData("njiax-a");
                 switch (auth) {
                 case InfoElement.MD5_V:
+                    password = Converter.byteArrayToHexString(FrameUtil.md5(challenge.getBytes(), password.getBytes()));
+                    authRepFrame.setMD5Result(password);
+                    break;
+                //TODO
+                case InfoElement.MD5_V2:
                     password = Converter.byteArrayToHexString(FrameUtil.md5(challenge.getBytes(), password.getBytes()));
                     authRepFrame.setMD5Result(password);
                     break;
