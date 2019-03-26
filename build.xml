@@ -1,0 +1,53 @@
+<project name="njiax" basedir="." default="compile">
+	<property name="jar.name" value="njiax.jar"/>
+	<property name="src" value="./src"/>
+	<property name="javadoc" value="./javadoc"/>
+	<property name="classes" value="./classes"/>
+	<property name="lib" value="./lib"/>
+	<property name="jar" value="./jar"/>
+	<property name="tmp" value="./tmp"/>
+
+	<!-- Initialize the system -->
+	<target name="init">
+		<echo>
+		#####################################################
+		#                                                   #
+		#  NJIAX (Nomasystems Java IAX2 Protocol) vs 1.0.0  #
+		#                                                   #
+		#####################################################
+		</echo>
+	</target>
+
+	<!-- Build everything -->
+	<target name="all" depends="compile, jar, javadoc" description="Build everything."/>
+	
+	<!-- Clean everything -->
+	<target name="clean" depends="init">
+		<delete dir="${classes}"/>
+		<delete dir="${jar}"/>
+		<delete dir="${javadoc}"/>
+	</target>
+
+	<!-- Compile the source -->
+	<target name="compile" depends="init">
+		<mkdir dir="classes"/>
+		<javac srcdir="${src}" destdir="${classes}" 
+		debug="true" deprecation="true">
+		</javac>
+	</target>
+
+	<!-- Create the jar file -->
+	<target name="jar" depends="compile">
+		<mkdir dir="${jar}"/>
+		<delete file="${jar}/${jar.name}"/>
+		<jar destfile="${jar}/${jar.name}">
+			<fileset dir="${classes}"/>
+		</jar>
+	</target>
+	
+	<!-- Create the javadoc -->
+	<target name="javadoc" depends="init">
+		<mkdir dir="${javadoc}"/>
+		<javadoc sourcepath="${src}" destdir="${javadoc}" packagenames="*"/>
+	</target>
+</project>
